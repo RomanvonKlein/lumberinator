@@ -86,12 +86,13 @@ public class App extends JavaPlugin implements Listener {
 
         // Check wether the block broken is in the list of log-blocks
         if (isAxe(tool) && isTree(b) && !p.isSneaking()) {
-            this.tasks.add(new FellTreeTask(getTreeName(b), b.getX(), b.getY(),
-                    b.getZ(), b.getWorld(), this, b.getLocation(), tool));
+            this.tasks.add(new FellTreeTask(getTreeName(b), b.getX(), b.getY(), b.getZ(), b.getWorld(), this,
+                    b.getLocation(), tool));
             // get started executing tasks right away for user-feedback
             executeTasks();
-        }else{
-            p.sendMessage("Not doing stuff. isaxe(tool)=" + isAxe(tool) + ", isTree(b):" + isTree(b) + ", !p.isSneaking():" + !p.isSneaking());
+        } else {
+            p.sendMessage("Not doing stuff. isaxe(tool)=" + isAxe(tool) + ", isTree(b):" + isTree(b)
+                    + ", !p.isSneaking():" + !p.isSneaking());
         }
     }
 
@@ -99,7 +100,7 @@ public class App extends JavaPlugin implements Listener {
         Material toolmat = tool.getType();
         // TODO: have a list of items that are legal for lumberinator, having
         // damagevalue and metadata to check against
-        
+
         return (toolmat == Material.DIAMOND_AXE || toolmat == Material.GOLD_AXE || toolmat == Material.IRON_AXE
                 || toolmat == Material.STONE_AXE || toolmat == Material.WOOD_AXE);
     }
@@ -133,10 +134,10 @@ public class App extends JavaPlugin implements Listener {
         for (int x = posx - 1; x < posx + 2; x++) {
             for (int z = posz - 1; z < posz + 2; z++) {
                 Block nextBlock = block.getWorld().getBlockAt(x, posy, z);
-                getLogger().info("Checking at: " + x +" " + posy +" " + z);
+                getLogger().info("Checking at: " + x + " " + posy + " " + z);
                 if (isLeaf(treeName, nextBlock)) {
                     return true;
-                } else if (isLog(treeName, nextBlock)) {                    
+                } else if (isLog(treeName, nextBlock)) {
                     return (isTree(nextBlock));
                 }
             }
@@ -250,8 +251,8 @@ public class App extends JavaPlugin implements Listener {
         private ItemStack tool;
         private World world;
 
-        public FellTreeTask(String treeName,int posx, int posy, int posz, World world,
-                App app, Location startingLocation, ItemStack tool) {
+        public FellTreeTask(String treeName, int posx, int posy, int posz, World world, App app,
+                Location startingLocation, ItemStack tool) {
             this.name = "FellTreeTask";
             this.treeName = treeName;
             this.posx = posx;
@@ -275,35 +276,35 @@ public class App extends JavaPlugin implements Listener {
                     for (int z = -1; z < 2; z++) {
                         Block nextBlock = world.getBlockAt(posx + x, posy + y, posz + z);
                         if ((x != 0 || y != 0 || z != 0) && isBlockFromTreeType(treeName, nextBlock)) {
-                            String nextBlockId = nextBlock.getType().toString();
-                            Byte nextBlockData = nextBlock.getData();
                             if (isLeaf(this.treeName, nextBlock)) {
-                                
-                                if(!isAxe(tool)){return;}
-                                
+                                if (!isAxe(tool)) {
+                                    return;
+                                }
                                 // start leafDecayTask
                                 for (ItemStack stack : nextBlock.getDrops(this.tool)) {
                                     nextBlock.getWorld().dropItemNaturally(startingLocation, stack);
                                 }
                                 nextBlock.setType(Material.AIR);
-                                this.app.tasks.add(new DecayLeafTask(treeName, posx + x,
-                                        posy + y, posz + z, world, app.leafDecayRange, app, startingLocation, this.tool));
+                                this.app.tasks.add(new DecayLeafTask(treeName, posx + x, posy + y, posz + z, world,
+                                        app.leafDecayRange, app, startingLocation, this.tool));
                             } else {
-                                if(!isAxe(tool)){return;}
+                                if (!isAxe(tool)) {
+                                    return;
+                                }
                                 for (ItemStack stack : nextBlock.getDrops(this.tool)) {
                                     nextBlock.getWorld().dropItemNaturally(startingLocation, stack);
                                 }
                                 nextBlock.setType(Material.AIR);
-                                
-                                tool.setDurability((short)(tool.getDurability() + 1));
-                                if(tool.getDurability() >= tool.getType().getMaxDurability()){
+
+                                tool.setDurability((short) (tool.getDurability() + 1));
+                                if (tool.getDurability() >= tool.getType().getMaxDurability()) {
                                     tool.setType(Material.AIR);
                                     return;
                                 }
 
                                 // start another FellTreeTask
-                                this.app.tasks.add(new FellTreeTask(this.treeName, posx + x,
-                                        posy + y, posz + z, this.world, this.app, this.startingLocation, this.tool));
+                                this.app.tasks.add(new FellTreeTask(this.treeName, posx + x, posy + y, posz + z,
+                                        this.world, this.app, this.startingLocation, this.tool));
                             }
                         }
                     }
@@ -324,8 +325,8 @@ public class App extends JavaPlugin implements Listener {
         private Location startingLocation;
         private World world;
 
-        public DecayLeafTask(String treeName, int posx, int posy, int posz, World world,
-                int strength, App app, Location startingLocation, ItemStack tool) {
+        public DecayLeafTask(String treeName, int posx, int posy, int posz, World world, int strength, App app,
+                Location startingLocation, ItemStack tool) {
             this.name = "DecayLeafTask";
             this.treeName = treeName;
             this.app = app;
@@ -359,8 +360,8 @@ public class App extends JavaPlugin implements Listener {
                                 nextBlock.getWorld().dropItemNaturally(startingLocation, stack);
                             }
                             nextBlock.setType(Material.AIR);
-                            this.app.tasks.add(new DecayLeafTask(treeName, posx + x,
-                                    posy + y, posz + z, world, strength - 1, app, startingLocation, this.tool));
+                            this.app.tasks.add(new DecayLeafTask(treeName, posx + x, posy + y, posz + z, world,
+                                    strength - 1, app, startingLocation, this.tool));
                         }
                     }
                 }
