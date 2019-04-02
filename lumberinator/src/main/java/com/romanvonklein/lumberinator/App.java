@@ -86,7 +86,7 @@ public class App extends JavaPlugin implements Listener {
 
         // Check wether the block broken is in the list of log-blocks
         if (isAxe(tool) && isTree(b) && !p.isSneaking()) {
-            this.tasks.add(new FellTreeTask(getTreeName(b), b.getType().toString(), b.getData(), b.getX(), b.getY(),
+            this.tasks.add(new FellTreeTask(getTreeName(b), b.getX(), b.getY(),
                     b.getZ(), b.getWorld(), this, b.getLocation(), tool));
             // get started executing tasks right away for user-feedback
             executeTasks();
@@ -244,20 +244,16 @@ public class App extends JavaPlugin implements Listener {
         private String treeName;
         private App app;
         private Location startingLocation;
-        private String blockID;
-        private Byte blockData;
         private int posx;
         private int posy;
         private int posz;
         private ItemStack tool;
         private World world;
 
-        public FellTreeTask(String treeName, String blockID, Byte blockData, int posx, int posy, int posz, World world,
+        public FellTreeTask(String treeName,int posx, int posy, int posz, World world,
                 App app, Location startingLocation, ItemStack tool) {
             this.name = "FellTreeTask";
             this.treeName = treeName;
-            this.blockID = blockID;
-            this.blockData = blockData;
             this.posx = posx;
             this.posy = posy;
             this.posz = posz;
@@ -290,7 +286,7 @@ public class App extends JavaPlugin implements Listener {
                                     nextBlock.getWorld().dropItemNaturally(startingLocation, stack);
                                 }
                                 nextBlock.setType(Material.AIR);
-                                this.app.tasks.add(new DecayLeafTask(treeName, nextBlockId, nextBlockData, posx + x,
+                                this.app.tasks.add(new DecayLeafTask(treeName, posx + x,
                                         posy + y, posz + z, world, app.leafDecayRange, app, startingLocation, this.tool));
                             } else {
                                 if(!isAxe(tool)){return;}
@@ -306,7 +302,7 @@ public class App extends JavaPlugin implements Listener {
                                 }
 
                                 // start another FellTreeTask
-                                this.app.tasks.add(new FellTreeTask(this.treeName, nextBlockId, nextBlockData, posx + x,
+                                this.app.tasks.add(new FellTreeTask(this.treeName, posx + x,
                                         posy + y, posz + z, this.world, this.app, this.startingLocation, this.tool));
                             }
                         }
@@ -319,8 +315,6 @@ public class App extends JavaPlugin implements Listener {
     private class DecayLeafTask implements ITask {
         private String name;
         private String treeName;
-        private String blockID;
-        private Byte blockData;
         private int posx;
         private int posy;
         private ItemStack tool;
@@ -330,7 +324,7 @@ public class App extends JavaPlugin implements Listener {
         private Location startingLocation;
         private World world;
 
-        public DecayLeafTask(String treeName, String blockID, Byte blockData, int posx, int posy, int posz, World world,
+        public DecayLeafTask(String treeName, int posx, int posy, int posz, World world,
                 int strength, App app, Location startingLocation, ItemStack tool) {
             this.name = "DecayLeafTask";
             this.treeName = treeName;
@@ -338,8 +332,6 @@ public class App extends JavaPlugin implements Listener {
             this.posx = posx;
             this.posy = posy;
             this.posz = posz;
-            this.blockID = blockID;
-            this.blockData = blockData;
             this.world = world;
             this.tool = tool;
             this.strength = strength;
@@ -361,15 +353,13 @@ public class App extends JavaPlugin implements Listener {
                 for (int y = -1; y < 2; y++) {
                     for (int z = -1; z < 2; z++) {
                         Block nextBlock = this.world.getBlockAt(posx + x, posy + y, posz + z);
-                        String nextBlockID = nextBlock.getType().toString();
-                        Byte nextBlockData = nextBlock.getData();
                         if (isLeaf(this.treeName, nextBlock)
                                 && app.canDecay(this.treeName, world, posx + x, posy + y, posz + z)) {
                             for (ItemStack stack : nextBlock.getDrops(this.tool)) {
                                 nextBlock.getWorld().dropItemNaturally(startingLocation, stack);
                             }
                             nextBlock.setType(Material.AIR);
-                            this.app.tasks.add(new DecayLeafTask(treeName, nextBlockID, nextBlockData, posx + x,
+                            this.app.tasks.add(new DecayLeafTask(treeName, posx + x,
                                     posy + y, posz + z, world, strength - 1, app, startingLocation, this.tool));
                         }
                     }
